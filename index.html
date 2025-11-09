@@ -1,0 +1,203 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>استبيان فحص سرطان الرئة — PLCOm2012</title>
+<style>
+  body{font:16px system-ui, -apple-system, Segoe UI; margin:24px; max-width:760px}
+  h1{font-size:22px;margin:0 0 10px}
+  fieldset{margin:16px 0;padding:12px;border:1px solid #ddd;border-radius:8px}
+  label{display:block;margin:8px 0}
+  select,input{padding:8px;border:1px solid #ccc;border-radius:6px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row > label{flex:1 1 180px}
+  button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer}
+  .ok{background:#e6fff5;border:1px solid #b3f0d0;padding:12px;border-radius:8px}
+  .warn{background:#fff5e6;border:1px solid #ffd699;padding:12px;border-radius:8px}
+  .danger{background:#ffecec;border:1px solid #ffb3b3;padding:12px;border-radius:8px}
+  .muted{color:#555}
+</style>
+
+<h1>استبيان فحص سرطان الرئة (PLCOm2012)</h1>
+<p class="muted">للمُدخنين الحاليين أو السابقين فقط (ever-smokers). ذوو الأعراض التنبيهية = مسار تشخيص، وليس تحرّي.</p>
+
+<form id="f">
+  <fieldset>
+    <legend>أمان سريع</legend>
+    <label>أعراض تنبيهية الآن (سعال &gt;3 أسابيع، نفث دم، نقص وزن غير مفسَّر…)? 
+      <select name="alarm" required>
+        <option value="no">لا</option>
+        <option value="yes">نعم</option>
+      </select>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>البيانات العامة</legend>
+    <div class="row">
+      <label>العمر (سنوات)
+        <input type="number" name="age" min="35" max="90" required>
+      </label>
+      <label>BMI
+        <input type="number" name="bmi" step="0.1" min="10" max="60" required>
+      </label>
+      <label>التعليم (1=أقل من ثانوي … 6=دراسات عليا)
+        <input type="number" name="edu" min="1" max="6" required>
+      </label>
+    </div>
+    <label>التشخيص: COPD/نفاخ/التهاب شعب مزمن؟
+      <select name="copd" required><option value="0">لا</option><option value="1">نعم</option></select>
+    </label>
+    <label>قصة شخصية لسرطان سابق؟
+      <select name="cancer_hist" required><option value="0">لا</option><option value="1">نعم</option></select>
+    </label>
+    <label>قصة عائلية (درجة أولى) لسرطان الرئة؟
+      <select name="fam" required><option value="0">لا</option><option value="1">نعم</option></select>
+    </label>
+    <label>العرق (للبلدان خارج أمريكا اختر "أبيض/غير محدد" لتأثير صفري)
+      <select name="race" required>
+        <option value="white">أبيض/غير محدد</option>
+        <option value="black">أسود</option>
+        <option value="hispanic">هسباني</option>
+        <option value="asian">آسيوي</option>
+        <option value="nhpi">Native Hawaiian / Pacific Islander</option>
+        <option value="ai_an">American Indian / Alaska Native</option>
+      </select>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>التدخين</legend>
+    <label>الحالة:
+      <select name="smk_status" required>
+        <option value="current">مدخّن حاليًا</option>
+        <option value="former">أقلعت</option>
+      </select>
+    </label>
+    <div class="row">
+      <label>متوسط سجائر/اليوم (عند فترة التدخين)
+        <input type="number" name="cigs_per_day" min="1" max="200" required>
+      </label>
+      <label>سنوات التدخين
+        <input type="number" name="years_smoked" min="1" max="80" required>
+      </label>
+      <label>سنوات منذ الإقلاع (إن وُجد)
+        <input type="number" name="years_since_quit" min="0" max="80" value="0" required>
+      </label>
+    </div>
+  </fieldset>
+
+  <button type="submit">احسب القرار</button>
+</form>
+
+<div id="out" style="margin-top:16px"></div>
+
+<p class="muted" style="margin-top:16px">
+القرار المرجعي: NHS TLHC — إحالة للـLDCT إذا كان خطر PLCOm2012 ≥ <b>1.51%</b> خلال 6 سنوات.
+</p>
+
+<script>
+const B = {
+  // معاملات PLCOm2012 (جدول 2 — NEJM 2013)
+  age: 0.0778868,
+  edu: -0.0812744,
+  bmi: -0.0274194,
+  copd: 0.3553063,
+  cancer_hist: 0.4589971,
+  fam: 0.587185,
+  smk_current: 0.2597431,
+  intensity: -1.822606,  // متحوّل خاص
+  duration: 0.0317321,
+  quit: -0.0308572,
+  race_black: 0.3944778,
+  race_hispanic: -0.7434744,
+  race_asian: -0.466585,
+  race_nhpi: 1.027152,
+  // American Indian/Alaska Native = 0 (مثل الأبيض)
+  constant: -4.532506
+};
+// قيم التمركز (footnote في نفس الجدول)
+const CENTER = {age:62, edu:4, bmi:27, duration:27, quit:10};
+// ثابت تمركز شدة التدخين من الورقة
+const INTENSITY_CENTER = 0.4021541613;
+// عتبة NHS
+const THRESH = 0.0151;
+
+function plcoProb(input){
+  // تحقق أساسي
+  if(input.cigs_per_day <= 0 || input.years_smoked <= 0){
+    throw new Error("النموذج مخصص لمن دخّنوا سابقًا وبقيمة سجائر/اليوم وسنوات تدخين > 0.");
+  }
+  // لوغت النموذج
+  let L = B.constant;
+  // متغيرات مستمرة (مطروح منها قيم التمركز)
+  L += B.age * (input.age - CENTER.age);
+  L += B.edu * (input.edu - CENTER.edu);
+  L += B.bmi * (input.bmi - CENTER.bmi);
+  L += B.duration * (input.years_smoked - CENTER.duration);
+  L += B.quit * (input.years_since_quit - CENTER.quit);
+
+  // شدة التدخين: (cigs/10)^(−1) متمركزة − 0.4021541613
+  const transformedIntensity = Math.pow(input.cigs_per_day/10, -1) - INTENSITY_CENTER;
+  L += B.intensity * transformedIntensity;
+
+  // ثنائيات
+  L += B.copd * (input.copd ? 1 : 0);
+  L += B.cancer_hist * (input.cancer_hist ? 1 : 0);
+  L += B.fam * (input.fam ? 1 : 0);
+  L += B.smk_current * (input.smk_status === 'current' ? 1 : 0);
+
+  // العِرق
+  if(input.race === 'black') L += B.race_black;
+  else if(input.race === 'hispanic') L += B.race_hispanic;
+  else if(input.race === 'asian') L += B.race_asian;
+  else if(input.race === 'nhpi') L += B.race_nhpi;
+  // 'white' و 'ai_an' = 0
+
+  // تحويل للاحتمال: exp(L)/(1+exp(L))
+  const p = Math.exp(L) / (1 + Math.exp(L));
+  return p; // 0..1
+}
+
+function decision(p){ return (p >= THRESH) ? "مؤهّل: افحص LDCT سنويًا" : "غير مؤهّل الآن: دعم الإقلاع وأعد التقييم خلال 12 شهرًا"; }
+
+document.getElementById('f').addEventListener('submit', e=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const v = Object.fromEntries(fd.entries());
+  const inp = {
+    alarm: v.alarm,
+    age: Number(v.age),
+    bmi: Number(v.bmi),
+    edu: Number(v.edu),
+    copd: Number(v.copd),
+    cancer_hist: Number(v.cancer_hist),
+    fam: Number(v.fam),
+    race: v.race,
+    smk_status: v.smk_status,
+    cigs_per_day: Number(v.cigs_per_day),
+    years_smoked: Number(v.years_smoked),
+    years_since_quit: Number(v.years_since_quit)
+  };
+  const out = document.getElementById('out');
+
+  if(inp.alarm === 'yes'){
+    out.className='danger';
+    out.innerHTML = "<b>مسار تشخيص فوري (ليس تحرّي).</b> راجع طبيب/طوارئ لتقييم وتصوير مناسب.";
+    return;
+  }
+
+  try{
+    const p = plcoProb(inp);
+    const label = decision(p);
+    const cls = (p>=THRESH)?'ok':'warn';
+    out.className = cls;
+    out.innerHTML = `
+      <b>القرار:</b> ${label}<br>
+      <b>خطر 6 سنوات (PLCOm2012):</b> ${(p*100).toFixed(2)}%
+    `;
+  }catch(err){
+    out.className='danger';
+    out.textContent = err.message;
+  }
+});
+</script>
