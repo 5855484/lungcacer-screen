@@ -8,6 +8,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap');
 
     :root {
+        color-scheme: light dark;
         /* لوحة ألوان موضوع صحة الرئة */
         --primary: #0ea5a2;
         --primary-b: #0ea5a2;
@@ -30,6 +31,8 @@
     * {
         box-sizing: border-box
     }
+
+    html { -webkit-text-size-adjust: 100%; }
 
     body {
         font-family: 'Tajawal', system-ui, -apple-system, Segoe UI, sans-serif;
@@ -121,6 +124,9 @@
         background: #fff;
         transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
         accent-color: var(--primary-b);
+        font: inherit;
+        line-height: 1.2;
+        display: block;
     }
 
     /* تحسين مظهر الحقول وترتيب النص بالنسبة لحقل الإدخال */
@@ -186,10 +192,11 @@
         -moz-appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: 12px center;
+        background-position: left 12px center;
         /* RTL: السهم يسار */
         background-size: 18px 18px;
         padding-inline-start: 40px;
+        padding-inline-end: 12px;
         /* مساحة للسهم */
     }
 
@@ -204,11 +211,13 @@
     .row {
         display: flex;
         gap: 12px;
-        flex-wrap: wrap
+        flex-wrap: wrap;
+        align-items: flex-start;
     }
 
     .row>label {
-        flex: 1 1 220px
+        flex: 1 1 220px;
+        min-width: 0;
     }
 
     .ckg {
@@ -270,6 +279,7 @@
         button[type=submit] {
             width: 100%;
         }
+        select { background-image: none; padding-inline-start: 12px; }
     }
 
     .result {
@@ -351,6 +361,7 @@
 
         select {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23a5b7b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-position: left 12px center;
         }
 
         .ckg label {
@@ -371,6 +382,8 @@
         button {
             box-shadow: 0 6px 16px rgba(0, 0, 0, .35)
         }
+
+        .muted { color: #a7bfbc; }
     }
 </style>
 
