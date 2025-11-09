@@ -1,203 +1,741 @@
 <!doctype html>
+<html lang="ar" dir="rtl">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>استبيان فحص سرطان الرئة — PLCOm2012</title>
 <style>
-  body{font:16px system-ui, -apple-system, Segoe UI; margin:24px; max-width:760px}
-  h1{font-size:22px;margin:0 0 10px}
-  fieldset{margin:16px 0;padding:12px;border:1px solid #ddd;border-radius:8px}
-  label{display:block;margin:8px 0}
-  select,input{padding:8px;border:1px solid #ccc;border-radius:6px}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .row > label{flex:1 1 180px}
-  button{padding:10px 16px;border:0;border-radius:8px;cursor:pointer}
-  .ok{background:#e6fff5;border:1px solid #b3f0d0;padding:12px;border-radius:8px}
-  .warn{background:#fff5e6;border:1px solid #ffd699;padding:12px;border-radius:8px}
-  .danger{background:#ffecec;border:1px solid #ffb3b3;padding:12px;border-radius:8px}
-  .muted{color:#555}
+    /* خط مناسب للعربية مع بدائل نظامية */
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap');
+
+    :root {
+        /* لوحة ألوان موضوع صحة الرئة */
+        --primary: #0ea5a2;
+        --primary-b: #0ea5a2;
+        --primary-2: #2dd4bf;
+        --bg: linear-gradient(135deg, #f0fdfa, #ecfeff);
+        --card: #ffffff;
+        --line: #e6e6e6;
+        --fg: #101828;
+        --muted: #64748b;
+
+        /* حالات النتائج */
+        --ok-b: #16a34a;
+        --ok: #16a34a20;
+        --warn-b: #f59e0b;
+        --warn: #f59e0b20;
+        --danger-b: #ef4444;
+        --danger: #ef444420;
+    }
+
+    * {
+        box-sizing: border-box
+    }
+
+    body {
+        font-family: 'Tajawal', system-ui, -apple-system, Segoe UI, sans-serif;
+        font-size: 16px;
+        color: var(--fg);
+        margin: 0;
+        background: var(--bg);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .wrap {
+        max-width: 920px;
+        margin: 40px auto;
+        padding: 16px;
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+        padding: 18px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 22px rgba(14, 165, 162, 0.25);
+    }
+
+    .logo {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ffffff, #ccfbf1 35%, rgba(255, 255, 255, 0.15) 36%),
+            linear-gradient(135deg, #0ea5a2, #2dd4bf);
+        position: relative;
+        flex: 0 0 auto;
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+    }
+
+    .logo::before {
+        content: '🫁';
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 26px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .sub {
+        color: #e6fffb;
+        margin-top: 4px;
+        font-size: 14px
+    }
+
+    fieldset {
+        margin: 16px 0;
+        padding: 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.06);
+    }
+
+    legend {
+        padding: 0 6px;
+        font-weight: 700;
+        color: var(--primary-b)
+    }
+
+    label {
+        display: block;
+        margin: 8px 0
+    }
+
+    select,
+    input {
+        padding: 12px 12px;
+        border: 1px solid #cfd3d7;
+        border-radius: 10px;
+        width: 100%;
+        background: #fff;
+        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+        accent-color: var(--primary-b);
+    }
+
+    /* تحسين مظهر الحقول وترتيب النص بالنسبة لحقل الإدخال */
+    label {
+        display: block;
+        margin: 10px 0;
+        font-weight: 600;
+    }
+
+    label>input,
+    label>select {
+        margin-top: 6px;
+        font-weight: 400;
+    }
+
+    /* إخفاء كامل للعنصر عندما يكون الحقل مخفياً */
+    label:has(input[hidden]),
+    label[hidden] {
+        display: none !important;
+    }
+
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary-b);
+        box-shadow: 0 0 0 3px rgba(14, 165, 162, .15)
+    }
+
+    input[readonly] {
+        background: #f8fafc;
+        color: #6b7280;
+        cursor: default;
+    }
+
+    /* إبراز الحقول الصحيحة/الخاطئة بدون تغيير النص */
+    input:required:user-invalid,
+    select:required:user-invalid {
+        border-color: var(--danger-b);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
+    }
+
+    input:required:user-valid,
+    select:required:user-valid {
+        border-color: var(--ok-b);
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, .12);
+    }
+
+    /* إخفاء أسهم أرقام المتصفح لإدخال أنظف */
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* تحسين السلكت */
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 12px center;
+        /* RTL: السهم يسار */
+        background-size: 18px 18px;
+        padding-inline-start: 40px;
+        /* مساحة للسهم */
+    }
+
+    select::-ms-expand {
+        display: none;
+    }
+
+    input::placeholder {
+        color: #9aa4b2
+    }
+
+    .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap
+    }
+
+    .row>label {
+        flex: 1 1 220px
+    }
+
+    .ckg {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 10px
+    }
+
+    .ckg label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        transition: transform .12s ease, box-shadow .12s ease, border-color .2s ease;
+    }
+
+    .ckg label:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(2, 132, 199, .08)
+    }
+
+    .ckg input[type=checkbox] {
+        accent-color: var(--primary-b)
+    }
+
+    /* إبراز اختيار التنبيهات */
+    .ckg label:has(input:checked) {
+        border-color: var(--primary-b);
+        box-shadow: 0 6px 14px rgba(14, 165, 162, .15);
+        background: linear-gradient(180deg, #ffffff, #f7fffe);
+    }
+
+    button {
+        padding: 12px 20px;
+        border: 0;
+        border-radius: 12px;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: white;
+        font-weight: 700;
+        letter-spacing: .2px;
+        box-shadow: 0 6px 16px rgba(14, 165, 162, .25);
+        transition: transform .1s ease, box-shadow .2s ease, filter .2s ease;
+    }
+
+    button:hover {
+        filter: brightness(1.03);
+        box-shadow: 0 8px 20px rgba(14, 165, 162, .3)
+    }
+
+    button:active {
+        transform: translateY(1px)
+    }
+
+    @media (max-width: 520px) {
+        button[type=submit] {
+            width: 100%;
+        }
+    }
+
+    .result {
+        margin-top: 16px;
+        padding: 16px 18px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(2, 132, 199, .06);
+        position: relative;
+    }
+
+    .result::before {
+        content: '';
+        position: absolute;
+        inset-inline-start: 0;
+        inset-block: 0;
+        width: 6px;
+        border-radius: 14px 0 0 14px;
+        background: transparent;
+    }
+
+    .ok {
+        background: var(--ok);
+        border-color: var(--ok-b)
+    }
+
+    .ok::before {
+        background: var(--ok-b)
+    }
+
+    .warn {
+        background: var(--warn);
+        border-color: var(--warn-b)
+    }
+
+    .warn::before {
+        background: var(--warn-b)
+    }
+
+    .danger {
+        background: var(--danger);
+        border-color: var(--danger-b)
+    }
+
+    .danger::before {
+        background: var(--danger-b)
+    }
+
+    .muted {
+        color: var(--muted)
+    }
+
+    .foot {
+        font-size: 13px;
+        color: #555;
+        margin-top: 12px
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: linear-gradient(135deg, #052e2b, #0b3b3b);
+            --card: #0b1f1e;
+            --line: #12312f;
+            --fg: #e6f8f6;
+            --muted: #9fb6b3;
+        }
+
+        header {
+            box-shadow: 0 6px 22px rgba(0, 0, 0, .35)
+        }
+
+        select,
+        input {
+            background: #0f2422;
+            color: var(--fg);
+            border-color: #1b3c39
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23a5b7b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        }
+
+        .ckg label {
+            background: #0f2422;
+            border-color: #1b3c39
+        }
+
+        .result {
+            background: #0f2422;
+            border-color: #1b3c39
+        }
+
+        input[readonly] {
+            background: #0e2321;
+            color: #97acab;
+        }
+
+        button {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, .35)
+        }
+    }
 </style>
 
-<h1>استبيان فحص سرطان الرئة (PLCOm2012)</h1>
-<p class="muted">للمُدخنين الحاليين أو السابقين فقط (ever-smokers). ذوو الأعراض التنبيهية = مسار تشخيص، وليس تحرّي.</p>
+<div class="wrap">
+    <header>
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+            <h1>استبيان فحص سرطان الرئة (PLCOm2012)</h1>
+            <div class="sub">للمُدخنين الحاليين أو السابقين فقط. ذوو الأعراض الإنذارية = مسار تشخيص.</div>
+        </div>
+    </header>
 
-<form id="f">
-  <fieldset>
-    <legend>أمان سريع</legend>
-    <label>أعراض تنبيهية الآن (سعال &gt;3 أسابيع، نفث دم، نقص وزن غير مفسَّر…)? 
-      <select name="alarm" required>
-        <option value="no">لا</option>
-        <option value="yes">نعم</option>
-      </select>
-    </label>
-  </fieldset>
+    <form id="f">
+        <fieldset>
+            <legend>أعراض إنذارية (اختر ما ينطبق)</legend>
+            <div class="ckg">
+                <label><input type="checkbox" name="alarm" value="سعال مستمر &gt;3 أسابيع"> سعال مستمر &gt;3
+                    أسابيع</label>
+                <label><input type="checkbox" name="alarm" value="نفث دم"> نفث دم</label>
+                <label><input type="checkbox" name="alarm" value="نقص وزن غير مفسر"> نقص وزن غير مفسر</label>
+                <label><input type="checkbox" name="alarm" value="ألم/انزعاج صدري مستمر"> ألم/انزعاج صدري مستمر</label>
+                <label><input type="checkbox" name="alarm" value="التهابات صدر متكررة"> التهابات صدر متكررة</label>
+                <label><input type="checkbox" name="alarm" value="بحّة/تغيّر بالصوت"> بحّة/تغيّر بالصوت</label>
+                <label><input type="checkbox" name="alarm" value="ضيق نفس متفاقم"> ضيق نفس متفاقم</label>
+                <label><input type="checkbox" name="alarm" value="فقدان شهية ملحوظ"> فقدان شهية ملحوظ</label>
+            </div>
+            <div class="muted" style="margin-top:6px">وجود أي من هذه الأعراض يستوجب مسار تشخيص وليس تحرّي/Screening.
+            </div>
+        </fieldset>
 
-  <fieldset>
-    <legend>البيانات العامة</legend>
-    <div class="row">
-      <label>العمر (سنوات)
-        <input type="number" name="age" min="35" max="90" required>
-      </label>
-      <label>BMI
-        <input type="number" name="bmi" step="0.1" min="10" max="60" required>
-      </label>
-      <label>التعليم (1=أقل من ثانوي … 6=دراسات عليا)
-        <input type="number" name="edu" min="1" max="6" required>
-      </label>
+        <fieldset>
+            <legend>البيانات العامة</legend>
+            <div class="row">
+                <label>العمر (سنوات)
+                    <input type="number" name="age" min="18" max="90" required inputmode="numeric" enterkeyhint="next">
+                </label>
+                <label>الوزن (كغ)
+                    <input type="number" name="weight" step="0.1" min="20" max="300" required inputmode="decimal"
+                        enterkeyhint="next">
+                </label>
+                <label>الطول (سم)
+                    <input type="number" name="height_cm" step="0.1" min="100" max="250" required inputmode="decimal"
+                        enterkeyhint="next">
+                </label>
+                <label>BMI (يُحسب تلقائياً)
+                    <input type="number" name="bmi" step="0.1" min="10" max="60" readonly aria-readonly="true">
+                </label>
+                <label>التعليم (1=أقل من ثانوي … 6=دراسات عليا)
+                    <select name="edu" required>
+                        <option value="1">أقل من ثانوي</option>
+                        <option value="2">ثانوي</option>
+                        <option value="3">دبلوم/معهد</option>
+                        <option value="4" selected>جامعي</option>
+                        <option value="5">دراسات عليا</option>
+                        <option value="6">ماجستير/دكتوراه</option>
+                    </select>
+                </label>
+            </div>
+            <label>تشخيص سابق: COPD/نفاخ/التهاب شعب مزمن؟
+                <select name="copd" required>
+                    <option value="0">لا</option>
+                    <option value="1">نعم</option>
+                </select>
+            </label>
+            <label>قصة شخصية لسرطان سابق؟
+                <select name="cancer_hist" required>
+                    <option value="0">لا</option>
+                    <option value="1">نعم</option>
+                </select>
+            </label>
+            <label>قصة عائلية (درجة أولى) لسرطان الرئة؟
+                <select name="fam" required>
+                    <option value="0">لا</option>
+                    <option value="1">نعم</option>
+                </select>
+            </label>
+            <!-- العِرق محذوف من الواجهة ومُثبّت حسابه داخليًا على Baseline (غير محدد) -->
+        </fieldset>
+
+        <fieldset>
+            <legend>التدخين</legend>
+            <label>الحالة:
+                <select name="smk_status" required>
+                    <option value="current">مدخّن حاليًا</option>
+                    <option value="former">أقلعت</option>
+                </select>
+            </label>
+            <label>منتج التدخين المستخدم :
+                <select name="smk_product" required>
+                    <option value="cigarette" selected>سجائر</option>
+                    <option value="hookah">نرجيلة</option>
+                    <option value="vape">الفيب (Vape)</option>
+                </select>
+            </label>
+            <div class="row">
+                <label>متوسط سجائر/اليوم
+                    <input type="number" name="cigs_per_day" min="1" max="200" required inputmode="numeric"
+                        enterkeyhint="next">
+                </label>
+                <label hidden>رأس ارقيلة لكل يوم
+                    <input type="number" name="heads_per_day" min="0" step="0.1" value="0" required inputmode="decimal"
+                        enterkeyhint="next" hidden disabled>
+                </label>
+                <label hidden>رأس(bode) لكل يوم
+                    <input type="number" name="pods_per_day" min="0" step="0.1" value="0" required inputmode="decimal"
+                        enterkeyhint="next" hidden disabled>
+                </label>
+                <label>سنوات التدخين
+                    <input type="number" name="years_smoked" min="1" max="80" required inputmode="numeric"
+                        enterkeyhint="next">
+                </label>
+                <label>سنوات منذ الإقلاع (إن وُجد)
+                    <input type="number" name="years_since_quit" min="0" max="80" value="0" required inputmode="numeric"
+                        enterkeyhint="done" hidden disabled>
+                </label>
+            </div>
+            <div class="muted">Pack-years (تقريبي): <span id="py">0.0</span></div>
+        </fieldset>
+
+        <button type="submit">احسب القرار</button>
+    </form>
+
+    <div class="result" id="out" hidden></div>
+
+    <div class="foot">
+        القرار المرجعي: إحالة للـLDCT إذا كان خطر <b>PLCOm2012 ≥ 1.51%</b> خلال 6 سنوات. الحساب محليًا على جهازك.
     </div>
-    <label>التشخيص: COPD/نفاخ/التهاب شعب مزمن؟
-      <select name="copd" required><option value="0">لا</option><option value="1">نعم</option></select>
-    </label>
-    <label>قصة شخصية لسرطان سابق؟
-      <select name="cancer_hist" required><option value="0">لا</option><option value="1">نعم</option></select>
-    </label>
-    <label>قصة عائلية (درجة أولى) لسرطان الرئة؟
-      <select name="fam" required><option value="0">لا</option><option value="1">نعم</option></select>
-    </label>
-    <label>العرق (للبلدان خارج أمريكا اختر "أبيض/غير محدد" لتأثير صفري)
-      <select name="race" required>
-        <option value="white">أبيض/غير محدد</option>
-        <option value="black">أسود</option>
-        <option value="hispanic">هسباني</option>
-        <option value="asian">آسيوي</option>
-        <option value="nhpi">Native Hawaiian / Pacific Islander</option>
-        <option value="ai_an">American Indian / Alaska Native</option>
-      </select>
-    </label>
-  </fieldset>
-
-  <fieldset>
-    <legend>التدخين</legend>
-    <label>الحالة:
-      <select name="smk_status" required>
-        <option value="current">مدخّن حاليًا</option>
-        <option value="former">أقلعت</option>
-      </select>
-    </label>
-    <div class="row">
-      <label>متوسط سجائر/اليوم (عند فترة التدخين)
-        <input type="number" name="cigs_per_day" min="1" max="200" required>
-      </label>
-      <label>سنوات التدخين
-        <input type="number" name="years_smoked" min="1" max="80" required>
-      </label>
-      <label>سنوات منذ الإقلاع (إن وُجد)
-        <input type="number" name="years_since_quit" min="0" max="80" value="0" required>
-      </label>
-    </div>
-  </fieldset>
-
-  <button type="submit">احسب القرار</button>
-</form>
-
-<div id="out" style="margin-top:16px"></div>
-
-<p class="muted" style="margin-top:16px">
-القرار المرجعي: NHS TLHC — إحالة للـLDCT إذا كان خطر PLCOm2012 ≥ <b>1.51%</b> خلال 6 سنوات.
-</p>
+</div>
 
 <script>
-const B = {
-  // معاملات PLCOm2012 (جدول 2 — NEJM 2013)
-  age: 0.0778868,
-  edu: -0.0812744,
-  bmi: -0.0274194,
-  copd: 0.3553063,
-  cancer_hist: 0.4589971,
-  fam: 0.587185,
-  smk_current: 0.2597431,
-  intensity: -1.822606,  // متحوّل خاص
-  duration: 0.0317321,
-  quit: -0.0308572,
-  race_black: 0.3944778,
-  race_hispanic: -0.7434744,
-  race_asian: -0.466585,
-  race_nhpi: 1.027152,
-  // American Indian/Alaska Native = 0 (مثل الأبيض)
-  constant: -4.532506
-};
-// قيم التمركز (footnote في نفس الجدول)
-const CENTER = {age:62, edu:4, bmi:27, duration:27, quit:10};
-// ثابت تمركز شدة التدخين من الورقة
-const INTENSITY_CENTER = 0.4021541613;
-// عتبة NHS
-const THRESH = 0.0151;
+    /* معاملات PLCOm2012 (جدول 2 — NEJM 2013)، مع تثبيت العِرق على Baseline (أثر صفري). */
+    const B = {
+        age: 0.0778868,
+        edu: -0.0812744,
+        bmi: -0.0274194,
+        copd: 0.3553063,
+        cancer_hist: 0.4589971,
+        fam: 0.587185,
+        smk_current: 0.2597431,
+        intensity: -1.822606,  // (cigs/10)^(-1) متمركزة
+        duration: 0.0317321,
+        quit: -0.0308572,
+        constant: -4.532506
+    };
+    const CENTER = { age: 62, edu: 4, bmi: 27, duration: 27, quit: 10 };
+    const INTENSITY_CENTER = 0.4021541613;
+    const THRESH = 0.0151;
 
-function plcoProb(input){
-  // تحقق أساسي
-  if(input.cigs_per_day <= 0 || input.years_smoked <= 0){
-    throw new Error("النموذج مخصص لمن دخّنوا سابقًا وبقيمة سجائر/اليوم وسنوات تدخين > 0.");
-  }
-  // لوغت النموذج
-  let L = B.constant;
-  // متغيرات مستمرة (مطروح منها قيم التمركز)
-  L += B.age * (input.age - CENTER.age);
-  L += B.edu * (input.edu - CENTER.edu);
-  L += B.bmi * (input.bmi - CENTER.bmi);
-  L += B.duration * (input.years_smoked - CENTER.duration);
-  L += B.quit * (input.years_since_quit - CENTER.quit);
+    function plcoProb(input) {
+        if (input.cigs_per_day <= 0 || input.years_smoked <= 0) {
+            throw new Error("النموذج مخصص لمن دخّنوا سابقًا وبقيمة سجائر/اليوم وسنوات تدخين > 0.");
+        }
+        let L = B.constant;
+        L += B.age * (input.age - CENTER.age);
+        L += B.edu * (input.edu - CENTER.edu);
+        L += B.bmi * (input.bmi - CENTER.bmi);
+        L += B.duration * (input.years_smoked - CENTER.duration);
+        L += B.quit * (input.years_since_quit - CENTER.quit);
+        const transformedIntensity = Math.pow(input.cigs_per_day / 10, -1) - INTENSITY_CENTER;
+        L += B.intensity * transformedIntensity;
+        L += B.copd * (input.copd ? 1 : 0);
+        L += B.cancer_hist * (input.cancer_hist ? 1 : 0);
+        L += B.fam * (input.fam ? 1 : 0);
+        L += B.smk_current * (input.smk_status === 'current' ? 1 : 0);
+        // لا نضيف أي معاملات عِرق → مثبت على Baseline (غير محدد)
+        const p = Math.exp(L) / (1 + Math.exp(L));
+        return p;
+    }
+    function decision(p) { return (p >= THRESH) ? "مؤهّل: افحص LDCT سنويًا" : "غير مؤهّل الآن: دعم الإقلاع وأعد التقييم خلال 12 شهرًا"; }
 
-  // شدة التدخين: (cigs/10)^(−1) متمركزة − 0.4021541613
-  const transformedIntensity = Math.pow(input.cigs_per_day/10, -1) - INTENSITY_CENTER;
-  L += B.intensity * transformedIntensity;
+    const f = document.getElementById('f');
+    const pySpan = document.getElementById('py');
 
-  // ثنائيات
-  L += B.copd * (input.copd ? 1 : 0);
-  L += B.cancer_hist * (input.cancer_hist ? 1 : 0);
-  L += B.fam * (input.fam ? 1 : 0);
-  L += B.smk_current * (input.smk_status === 'current' ? 1 : 0);
+    // إظهار/إخفاء حقل "سنوات منذ الإقلاع" حسب حالة التدخين
+    const quitInput = f.querySelector('input[name="years_since_quit"]');
+    const quitLabel = quitInput ? quitInput.closest('label') : null;
+    function toggleQuitField() {
+        const isFormer = f.smk_status.value === 'former';
+        if (quitLabel) quitLabel.hidden = !isFormer;
+        if (quitInput) {
+            quitInput.hidden = !isFormer;
+            quitInput.disabled = !isFormer;
+            quitInput.required = isFormer;
+            if (!isFormer) quitInput.value = '0';
+        }
+    }
+    if (f.smk_status) {
+        f.smk_status.addEventListener('change', toggleQuitField);
+        toggleQuitField();
+    }
+    // نوع المنتج وحقل الكمية حسب المنتج
+    const productSel = f.querySelector('select[name="smk_product"]');
+    const cigsInput = f.cigs_per_day;
+    const headsInput = f.heads_per_day;
+    const podsInput = f.pods_per_day;
+    function currentCigsPerDay() {
+        const prod = productSel?.value || 'cigarette';
+        if (prod === 'hookah') return (parseFloat(headsInput?.value) || 0) * 20;
+        if (prod === 'vape') return (parseFloat(podsInput?.value) || 0) * 20;
+        return parseFloat(cigsInput?.value) || 0;
+    }
+    function toggleProductFields() {
+        const prod = productSel?.value || 'cigarette';
+        const setVis = (el, show) => {
+            if (!el) return;
+            const lab = el.closest('label');
+            if (lab) lab.hidden = !show;
+            el.hidden = !show;
+            el.disabled = !show;
+            el.required = !!show;
+        };
+        setVis(cigsInput, prod === 'cigarette');
+        setVis(headsInput, prod === 'hookah');
+        setVis(podsInput, prod === 'vape');
+    }
+    function updatePY() {
+        const cigs = currentCigsPerDay();
+        const years = +f.years_smoked.value || 0;
+        const packsPerDay = cigs / 20;
+        pySpan.textContent = (packsPerDay * years).toFixed(1);
+    }
+    if (productSel) productSel.addEventListener('change', () => { toggleProductFields(); updatePY(); });
+    if (cigsInput) cigsInput.addEventListener('input', updatePY);
+    if (headsInput) headsInput.addEventListener('input', updatePY);
+    if (podsInput) podsInput.addEventListener('input', updatePY);
+    if (f.years_smoked) f.years_smoked.addEventListener('input', updatePY);
+    toggleProductFields();
+    updatePY();
 
-  // العِرق
-  if(input.race === 'black') L += B.race_black;
-  else if(input.race === 'hispanic') L += B.race_hispanic;
-  else if(input.race === 'asian') L += B.race_asian;
-  else if(input.race === 'nhpi') L += B.race_nhpi;
-  // 'white' و 'ai_an' = 0
+    // احسب الـ BMI تلقائياً من الوزن والطول (سم)
+    function updateBMI() {
+        const w = parseFloat(f.weight?.value);
+        const hcm = parseFloat(f.height_cm?.value);
+        if (!isNaN(w) && w > 0 && !isNaN(hcm) && hcm > 0) {
+            const hm = hcm / 100;
+            const bmi = w / (hm * hm);
+            if (isFinite(bmi)) {
+                f.bmi.value = bmi.toFixed(1);
+                return;
+            }
+        }
+        f.bmi.value = '';
+    }
+    if (f.weight && f.height_cm) {
+        f.weight.addEventListener('input', updateBMI);
+        f.height_cm.addEventListener('input', updateBMI);
+        // احسبه مرة عند التحميل إذا كانت القيم موجودة
+        updateBMI();
+    }
 
-  // تحويل للاحتمال: exp(L)/(1+exp(L))
-  const p = Math.exp(L) / (1 + Math.exp(L));
-  return p; // 0..1
-}
+    f.addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(f);
+        const alarms = fd.getAll('alarm'); // قائمة الأعراض المختارة
+        const v = Object.fromEntries(fd.entries());
+        // في حال كان مدخن حالي، قيمة سنوات منذ الإقلاع = 0
+        if (v.smk_status === 'current') {
+            v.years_since_quit = '0';
+        }
+        // تأكد من حساب BMI إذا لم يكن مُعبأً
+        if ((!v.bmi || v.bmi === '') && f.weight && f.height_cm) {
+            updateBMI();
+            const current = new FormData(f);
+            v.bmi = current.get('bmi');
+        }
+        const inp = {
+            age: Number(v.age),
+            bmi: Number(v.bmi),
+            edu: Number(v.edu),
+            copd: Number(v.copd),
+            cancer_hist: Number(v.cancer_hist),
+            fam: Number(v.fam),
+            smk_status: v.smk_status,
+            cigs_per_day: currentCigsPerDay(),
+            years_smoked: Number(v.years_smoked),
+            years_since_quit: Number(v.years_since_quit)
+        };
 
-function decision(p){ return (p >= THRESH) ? "مؤهّل: افحص LDCT سنويًا" : "غير مؤهّل الآن: دعم الإقلاع وأعد التقييم خلال 12 شهرًا"; }
+        // تحقق مبكر: تأكد من وجود BMI صالح
+        if (!isFinite(inp.bmi) || inp.bmi <= 0) {
+            const out = document.getElementById('out');
+            out.hidden = false;
+            out.className = 'result danger';
+            out.textContent = 'الرجاء إدخال الوزن والطول لحساب BMI بشكل صحيح.';
+            return;
+        }
 
-document.getElementById('f').addEventListener('submit', e=>{
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const v = Object.fromEntries(fd.entries());
-  const inp = {
-    alarm: v.alarm,
-    age: Number(v.age),
-    bmi: Number(v.bmi),
-    edu: Number(v.edu),
-    copd: Number(v.copd),
-    cancer_hist: Number(v.cancer_hist),
-    fam: Number(v.fam),
-    race: v.race,
-    smk_status: v.smk_status,
-    cigs_per_day: Number(v.cigs_per_day),
-    years_smoked: Number(v.years_smoked),
-    years_since_quit: Number(v.years_since_quit)
-  };
-  const out = document.getElementById('out');
+        const out = document.getElementById('out');
+        out.hidden = false;
 
-  if(inp.alarm === 'yes'){
-    out.className='danger';
-    out.innerHTML = "<b>مسار تشخيص فوري (ليس تحرّي).</b> راجع طبيب/طوارئ لتقييم وتصوير مناسب.";
-    return;
-  }
-
-  try{
-    const p = plcoProb(inp);
-    const label = decision(p);
-    const cls = (p>=THRESH)?'ok':'warn';
-    out.className = cls;
-    out.innerHTML = `
-      <b>القرار:</b> ${label}<br>
-      <b>خطر 6 سنوات (PLCOm2012):</b> ${(p*100).toFixed(2)}%
+        // إذا كان العمر أقل من 35: احسب عادي لكن التوصية دائماً الإقلاع عن التدخين
+        if (inp.age < 35) {
+            try {
+                const p = plcoProb(inp);
+                out.className = 'result warn';
+                out.innerHTML = `
+      <b>التوصية:</b> ننصح بالإقلاع عن التدخين<br>
+      <b>خطر 6 سنوات (PLCOm2012):</b> ${(p * 100).toFixed(2)}%
     `;
-  }catch(err){
-    out.className='danger';
-    out.textContent = err.message;
-  }
-});
+            } catch (err) {
+                out.className = 'result danger';
+                out.textContent = err.message;
+            }
+            return;
+        }
+
+        if (alarms.length > 0) {
+            out.className = 'result danger';
+            out.innerHTML = `<b>مسار تشخيص فوري (ليس تحرّي/Screening).</b><br>
+      الأعراض المختارة: ${alarms.map(s => `<span>• ${s}</span>`).join(' ، ')}<br>
+      يُنصَح بمراجعة طبيب/طوارئ لتقييم وتصوير مناسب.`;
+            return;
+        }
+
+        try {
+            const p = plcoProb(inp);
+            const label = decision(p);
+            out.className = 'result ' + ((p >= THRESH) ? 'ok' : 'warn');
+            out.innerHTML = `
+      <b>القرار:</b> ${label}<br>
+      <b>خطر 6 سنوات (PLCOm2012):</b> ${(p * 100).toFixed(2)}%
+    `;
+        } catch (err) {
+            out.className = 'result danger';
+            out.textContent = err.message;
+        }
+    });
+    // تخصيص النصوص لتكون عربية وموجهة للمرضى، وإزالة ذكر أسماء الفحوص بالإنجليزية
+    (function () {
+        try {
+            document.title = 'تقييم خطر سرطان الرئة';
+            const h1 = document.querySelector('h1');
+            if (h1) h1.textContent = 'تقييم خطر سرطان الرئة';
+            const sub = document.querySelector('.sub');
+            if (sub) sub.textContent = 'حاسبة لتقدير احتمالية الإصابة خلال 6 سنوات للمدخنين والحاليين أو المقلعين حديثاً. النتيجة إرشادية ولا تغني عن استشارة الطبيب.';
+            const mutedFirst = document.querySelector('fieldset .muted');
+            if (mutedFirst) mutedFirst.textContent = 'هذه مؤشرات إنذار؛ عند وجود أي منها يُفضّل مراجعة الطبيب بدلاً من استخدام الحاسبة.';
+            const foot = document.querySelector('.foot');
+            if (foot) foot.innerHTML = 'معلومة للقرار: نستخدم حد 1.51% خلال 6 سنوات لاقتراح التصوير الطبقي المحوري منخفض الجرعة.';
+
+            // استبدال دالة التوصية بنسخة بصياغة عربية للمريض
+            window.decision = function (p) {
+                return (p >= THRESH)
+                    ? 'ننصح بإجراء التصوير الطبقي المحوري منخفض الجرعة'
+                    : 'لا حاجة لفحص طبقي الآن؛ الأهم الإقلاع عن التدخين ومراجعة الطبيب عند ظهور أعراض.';
+            };
+
+            // تنظيف المخرجات من أي ذكر لـ PLCOm2012/LDCT/Screening واستبدالها بصياغة عربية مبسطة
+            const postProcess = () => {
+                const out = document.getElementById('out');
+                if (!out) return;
+                out.innerHTML = out.innerHTML
+                    .replace(/\(PLCOm2012\)/gi, '')
+                    .replace(/PLCOm2012/gi, '')
+                    .replace(/LDCT/gi, 'التصوير الطبقي المحوري منخفض الجرعة')
+                    .replace(/Screening/gi, 'الفحص المبكر')
+                    .replace(/خطر 6 سنوات/gi, 'خطر خلال 6 سنوات');
+            };
+            if (window.f) {
+                f.addEventListener('submit', () => setTimeout(postProcess));
+            } else {
+                document.addEventListener('submit', () => setTimeout(postProcess), true);
+            }
+        } catch (e) { /* تجاهل أي خطأ بسيط في التهيئة */ }
+    })();
 </script>
+
+</html>
