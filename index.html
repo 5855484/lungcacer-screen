@@ -229,7 +229,8 @@
     .ckg label {
         display: flex;
         gap: 10px;
-        align-items: center;
+        align-items: flex-start; /* لثبات بداية النص في iOS والأسطر المتعددة */
+        line-height: 1.4;
         background: #fff;
         border: 1px solid var(--line);
         border-radius: 10px;
@@ -243,7 +244,11 @@
     }
 
     .ckg input[type=checkbox] {
-        accent-color: var(--primary-b)
+        accent-color: var(--primary-b);
+        flex: 0 0 auto;
+        width: 18px;
+        height: 18px;
+        margin-top: 2px; /* يوازن سطر النص الأول في iOS */
     }
 
     /* إبراز اختيار التنبيهات */
@@ -280,6 +285,11 @@
             width: 100%;
         }
         select { background-image: none; padding-inline-start: 12px; }
+    }
+
+    /* على الأجهزة اللمسية (iOS/Android): استخدم السهم الافتراضي لتفادي الازدواجية */
+    @media (hover: none) and (pointer: coarse) {
+        select { background-image: none !important; padding-inline-start: 12px; }
     }
 
     .result {
@@ -360,8 +370,9 @@
         }
 
         select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23a5b7b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-            background-position: left 12px center;
+            /* في الوضع الداكن على الهواتف تظهر أسهم مكررة أحياناً، نعتمد الافتراضي */
+            background-image: none !important;
+            padding-inline-start: 12px;
         }
 
         .ckg label {
