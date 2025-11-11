@@ -32,7 +32,9 @@
         box-sizing: border-box
     }
 
-    html { -webkit-text-size-adjust: 100%; }
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
 
     body {
         font-family: 'Tajawal', system-ui, -apple-system, Segoe UI, sans-serif;
@@ -229,7 +231,8 @@
     .ckg label {
         display: flex;
         gap: 10px;
-        align-items: flex-start; /* لثبات بداية النص في iOS والأسطر المتعددة */
+        align-items: flex-start;
+        /* لثبات بداية النص في iOS والأسطر المتعددة */
         line-height: 1.4;
         background: #fff;
         border: 1px solid var(--line);
@@ -248,7 +251,8 @@
         flex: 0 0 auto;
         width: 18px;
         height: 18px;
-        margin-top: 2px; /* يوازن سطر النص الأول في iOS */
+        margin-top: 2px;
+        /* يوازن سطر النص الأول في iOS */
     }
 
     /* إبراز اختيار التنبيهات */
@@ -284,12 +288,19 @@
         button[type=submit] {
             width: 100%;
         }
-        select { background-image: none; padding-inline-start: 12px; }
+
+        select {
+            background-image: none;
+            padding-inline-start: 12px;
+        }
     }
 
     /* على الأجهزة اللمسية (iOS/Android): استخدم السهم الافتراضي لتفادي الازدواجية */
     @media (hover: none) and (pointer: coarse) {
-        select { background-image: none !important; padding-inline-start: 12px; }
+        select {
+            background-image: none !important;
+            padding-inline-start: 12px;
+        }
     }
 
     .result {
@@ -394,7 +405,9 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, .35)
         }
 
-        .muted { color: #a7bfbc; }
+        .muted {
+            color: #a7bfbc;
+        }
     }
 </style>
 
@@ -459,13 +472,13 @@
                     <option value="1">نعم</option>
                 </select>
             </label>
-            <label>قصة شخصية لسرطان سابق؟
+            <label>تاريخ شخصي لسرطان سابق؟
                 <select name="cancer_hist" required>
                     <option value="0">لا</option>
                     <option value="1">نعم</option>
                 </select>
             </label>
-            <label>قصة عائلية (درجة أولى) لسرطان الرئة؟
+            <label>تاريخ عائلي (درجة أولى) لسرطان الرئة؟
                 <select name="fam" required>
                     <option value="0">لا</option>
                     <option value="1">نعم</option>
@@ -703,9 +716,9 @@
 
         if (alarms.length > 0) {
             out.className = 'result danger';
-            out.innerHTML = `<b>مسار تشخيص فوري (ليس تحرّي/Screening).</b><br>
+            out.innerHTML = `<b>مسار تشخيص </b><br>
       الأعراض المختارة: ${alarms.map(s => `<span>• ${s}</span>`).join(' ، ')}<br>
-      يُنصَح بمراجعة طبيب/طوارئ لتقييم وتصوير مناسب.`;
+      ينصح بمراجعة الطبيب لتقييم الاعراض`;
             return;
         }
 
